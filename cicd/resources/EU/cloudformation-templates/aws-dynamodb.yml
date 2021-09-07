@@ -1,0 +1,86 @@
+Resources:
+  oapDataSourcesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: 'OAP_DATASOURCES-${self:provider.stage}'
+      BillingMode: PAY_PER_REQUEST
+      Tags:
+        - Key: 'Project'
+          Value: 'CreativeAutomation-OAP'
+        - Key: 'Environment'
+          Value: ${self:provider.stage}
+      AttributeDefinitions:
+        - AttributeName: ID
+          AttributeType: S
+        - AttributeName: dataFileName
+          AttributeType: S
+        - AttributeName: createdAt
+          AttributeType: S
+      KeySchema:
+        - AttributeName: ID
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: dataFileName-createdAt-Index
+          KeySchema:
+            - AttributeName: dataFileName
+              KeyType: HASH
+            - AttributeName: createdAt
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+      StreamSpecification:
+        StreamViewType: NEW_IMAGE
+  oapAssetsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: 'OAP_ASSETS-${self:provider.stage}'
+      BillingMode: PAY_PER_REQUEST
+      Tags:
+        - Key: 'Project'
+          Value: 'CreativeAutomation-OAP'
+        - Key: 'Environment'
+          Value: ${self:provider.stage}
+      AttributeDefinitions:
+        - AttributeName: trailerId
+          AttributeType: S
+        - AttributeName: promoAssetStatus
+          AttributeType: S
+        - AttributeName: modifiedAt
+          AttributeType: S
+        - AttributeName: wochitRenditionStatus
+          AttributeType: S
+      KeySchema:
+        - AttributeName: trailerId
+          KeyType: 'HASH'
+      GlobalSecondaryIndexes:
+        - IndexName: wochitRenditionStatus-modifiedAt-Index
+          KeySchema:
+            - AttributeName: wochitRenditionStatus
+              KeyType: HASH
+            - AttributeName: modifiedAt
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+        - IndexName: promoAssetStatus-modifiedAt-Index
+          KeySchema:
+            - AttributeName: promoAssetStatus
+              KeyType: HASH
+            - AttributeName: modifiedAt
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+      StreamSpecification:
+        StreamViewType: NEW_IMAGE
+Outputs:
+  oapDataSourcesTableStreamArn:
+    Description: OAP datasource stream arn
+    Value:
+      Fn::GetAtt: [oapDataSourcesTable, StreamArn]
+    Export:
+      Name: oap-datasources-${self:provider.stage}-StreamArn
+  oapAssetsTableStreamArn:
+    Description: OAP asset stream arn
+    Value:
+      Fn::GetAtt: [oapAssetsTable, StreamArn]
+    Export:
+      Name: oap-assets-${self:provider.stage}-StreamArn

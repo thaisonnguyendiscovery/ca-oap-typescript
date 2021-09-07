@@ -1,0 +1,25 @@
+Resources:
+  oapQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: ca-oap-queue-${self:provider.stage}.fifo
+      FifoQueue: true
+      ContentBasedDeduplication: true
+      VisibilityTimeout: 600
+
+  iconikQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: ca-oap-iconik-queue-${self:provider.stage}.fifo
+      MessageRetentionPeriod: 120
+      FifoQueue: true
+      ContentBasedDeduplication: true
+      VisibilityTimeout: 600
+
+  whatsonQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: ca-oap-wochit-queue-${self:provider.stage}.fifo
+      FifoQueue: true
+      ContentBasedDeduplication: true
+      VisibilityTimeout: 600

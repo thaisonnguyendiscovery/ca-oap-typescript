@@ -1,0 +1,39 @@
+service: ca-oap-typescript
+useDotenv: true
+configValidationMode: off
+package:
+  individually: true
+
+plugins:
+  - serverless-bundle
+  - serverless-offline
+  - serverless-dotenv-plugin
+  - serverless-pseudo-parameters
+  - serverless-iam-roles-per-function
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  stage: ${opt:stage, 'dev'}
+  region: ${opt:region, 'eu-central-1'}
+  regionCode: ${opt:regionCode, 'EU'}
+  realm: ${opt:realm, 'eu'}
+  lambdaHashingVersion: 20201221
+
+  eventBridge:
+    useCloudFormation: true
+
+custom:
+  bundle:
+    aliases:
+      - 'src/*': src/* #alias for unit test absolute path
+    copyFiles:
+      - from: './src/i18n/locales/'
+        to: './src/handlers/locales/'
+
+functions: ${file(cicd/resources/${self:provider.regionCode}/functions/aws-lambda-functions.yml)}
+
+resources:
+  - ${file(cicd/resources/${self:provider.regionCode}/cloudformation-templates/aws-cloudformation-s3.yml)}
+  - ${file(cicd/resources/${self:provider.regionCode}/cloudformation-templates/aws-dynamodb.yml)}
+  - ${file(cicd/resources/${self:provider.regionCode}/cloudformation-templates/aws-sqs.yml)}

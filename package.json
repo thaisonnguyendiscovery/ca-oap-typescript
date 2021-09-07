@@ -1,0 +1,50 @@
+{
+  "name": "ca-oap-adapter-typescript",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "DEBUG=TRACE,DEBUG,INFO,WARN,ERROR,FATAL serverless-bundle test --coverage --watchAll"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.81",
+    "@types/debug": "^4.1.7",
+    "@types/i18n": "^0.13.1",
+    "@types/jest": "^26.0.24",
+    "@types/libxmljs": "^0.18.7",
+    "@types/lodash": "^4.14.172",
+    "@types/node": "^16.4.10",
+    "@types/xml2js": "^0.4.9",
+    "@typescript-eslint/parser": "^4.29.1",
+    "aws-sdk-mock": "^5.2.2",
+    "serverless-dotenv-plugin": "^3.9.0",
+    "serverless-iam-roles-per-function": "^3.2.0",
+    "serverless-offline": "^8.0.0",
+    "serverless-pseudo-parameters": "^2.6.0",
+    "typescript": "^4.3.5"
+  },
+  "dependencies": {
+    "ajv": "^8.6.2",
+    "debug": "^4.3.2",
+    "i18n": "^0.13.3",
+    "iconv-lite": "^0.6.3",
+    "libxmljs": "^0.19.7",
+    "lodash": "^4.17.21",
+    "serverless-bundle": "^4.4.0",
+    "uuid": "^8.3.2",
+    "xml2js": "^0.4.23"
+  },
+  "jest": {
+    "moduleNameMapper": {
+      "src/(.*)": "<rootDir>/src/$1"
+    },
+    "collectCoverageFrom": [
+      "src/**/*.{ts,tsx}",
+      "!src/utils/Logger.ts",
+      "!src/utils/ResponseUtils.ts"
+    ]
+  }
+}

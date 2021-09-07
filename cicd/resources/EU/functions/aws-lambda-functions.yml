@@ -1,0 +1,73 @@
+EventBridgeEventHandler:
+  handler: src/handlers/EventBridgeEventHandler.handle
+  name: ${self:service}-EventBridgeEventHandler-${self:provider.stage}
+  memorySize: 256
+  environment:
+    DEBUG: ${env:DEBUG}
+    OAP_DATASOURCE_TABLE: 'OAP_DATASOURCES-${self:provider.stage}'
+    OAP_QUEUE_URL: !Sub https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/ca-oap-queue-${self:provider.stage}.fifo
+    DATA_SOURCE: 'WHATS_ON'
+    FAILED_FOLDER_PATH: ${self:provider.realm}/${self:provider.stage}/whatson/data/failed
+    ARCHIVE_FOLDER_PATH: ${self:provider.realm}/${self:provider.stage}/whatson/data/archive
+  iamRoleStatementsName: ${self:service}-EventBridgeEventHandler-${self:provider.stage}
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - s3:*
+      Resource:
+        - arn:aws:s3:::${self:service}-${self:provider.stage}
+        - arn:aws:s3:::${self:service}-${self:provider.stage}/*
+    - Effect: 'Allow'
+      Action:
+        - dynamodb:*
+      Resource:
+        - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/OAP_DATASOURCES-${self:provider.stage}
+        # - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/OAP_ASSETS-${self:provider.stage}
+    - Effect: Allow
+      Action:
+        - sqs:*
+      Resource:
+        - !Sub arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:ca-oap-queue-${self:provider.stage}.fifo
+        # - !Sub arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:ca-oap-iconik-queue-${self:provider.stage}.fifo
+        # - !Sub arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:ca-oap-wochit-queue-${self:provider.stage}.fifo
+  events:
+    - eventBridge:
+        pattern:
+          source:
+            - aws.s3
+          detail-type:
+            - AWS API Call via CloudTrail
+          detail:
+            eventSource:
+              - s3.amazonaws.com
+            eventName:
+              - PutObject
+            requestParameters:
+              bucketName:
+                - ${self:service}-${self:provider.stage}
+              key:
+                - prefix: ${self:provider.realm}/${self:provider.stage}/whatson/data/
+SqsEventHandler:
+  handler: src/handlers/SqsEventHandler.handle
+  name: ${self:service}-SqsEventHandler-${self:provider.stage}
+  memorySize: 256
+  iamRoleStatementsName: ${self:service}-SqsEventHandler-${self:provider.stage}
+  environment:
+    DEBUG: ${env:DEBUG}
+    OAP_DATASOURCE_TABLE: 'OAP_DATASOURCES-${self:provider.stage}'
+    OAP_ASSETS_TABLE: 'OAP_ASSETS-${self:provider.stage}'
+    OAP_ICONIK_QUEUE_URL: !Sub https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/ca-oap-iconik-queue-${self:provider.stage}.fifo
+  iamRoleStatements:
+    - Effect: 'Allow'
+      Action:
+        - dynamodb:*
+      Resource:
+        - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/OAP_DATASOURCES-${self:provider.stage}
+        - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/OAP_ASSETS-${self:provider.stage}
+    - Effect: Allow
+      Action:
+        - sqs:*
+      Resource:
+        - !Sub arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:ca-oap-iconik-queue-${self:provider.stage}.fifo
+  events:
+    - sqs: arn:aws:sqs:#{AWS::Region}:#{AWS::AccountId}:ca-oap-queue-${self:provider.stage}.fifo
